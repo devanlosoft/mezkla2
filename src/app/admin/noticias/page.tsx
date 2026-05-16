@@ -13,16 +13,20 @@ export const metadata: Metadata = {
 };
 
 async function getArticles() {
-  const prisma = getPrismaClient();
+  try {
+    const prisma = getPrismaClient();
 
-  return prisma.article.findMany({
-    orderBy: { createdAt: "desc" },
-    take: 50,
-    include: {
-      author: true,
-      category: true,
-    },
-  });
+    return await prisma.article.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 50,
+      include: {
+        author: true,
+        category: true,
+      },
+    });
+  } catch {
+    return [];
+  }
 }
 
 export default async function AdminArticlesPage() {

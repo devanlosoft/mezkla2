@@ -11,70 +11,83 @@ export const metadata: Metadata = {
 };
 
 async function getStats() {
-  const prisma = getPrismaClient();
-  const [
-    publishedCount,
-    draftCount,
-    reviewCount,
-    scheduledCount,
-    subscriberCount,
-    mostViewed,
-    categoryCounts,
-    activeAuthors,
-  ] = await Promise.all([
-    prisma.article.count({ where: { status: "PUBLISHED" } }),
-    prisma.article.count({ where: { status: "DRAFT" } }),
-    prisma.article.count({ where: { status: "REVIEW" } }),
-    prisma.article.count({ where: { status: "SCHEDULED" } }),
-    prisma.newsletterSubscriber.count({ where: { isActive: true } }),
-    prisma.article.findMany({
-      orderBy: { viewsCount: "desc" },
-      take: 5,
-      select: {
-        id: true,
-        title: true,
-        viewsCount: true,
-        status: true,
-      },
-    }),
-    prisma.category.findMany({
-      orderBy: { name: "asc" },
-      select: {
-        id: true,
-        name: true,
-        _count: {
-          select: { articles: true },
+  try {
+    const prisma = getPrismaClient();
+    const [
+      publishedCount,
+      draftCount,
+      reviewCount,
+      scheduledCount,
+      subscriberCount,
+      mostViewed,
+      categoryCounts,
+      activeAuthors,
+    ] = await Promise.all([
+      prisma.article.count({ where: { status: "PUBLISHED" } }),
+      prisma.article.count({ where: { status: "DRAFT" } }),
+      prisma.article.count({ where: { status: "REVIEW" } }),
+      prisma.article.count({ where: { status: "SCHEDULED" } }),
+      prisma.newsletterSubscriber.count({ where: { isActive: true } }),
+      prisma.article.findMany({
+        orderBy: { viewsCount: "desc" },
+        take: 5,
+        select: {
+          id: true,
+          title: true,
+          viewsCount: true,
+          status: true,
         },
-      },
-    }),
-    prisma.user.findMany({
-      where: {
-        articles: {
-          some: {},
+      }),
+      prisma.category.findMany({
+        orderBy: { name: "asc" },
+        select: {
+          id: true,
+          name: true,
+          _count: {
+            select: { articles: true },
+          },
         },
-      },
-      orderBy: { name: "asc" },
-      take: 8,
-      select: {
-        id: true,
-        name: true,
-        _count: {
-          select: { articles: true },
+      }),
+      prisma.user.findMany({
+        where: {
+          articles: {
+            some: {},
+          },
         },
-      },
-    }),
-  ]);
+        orderBy: { name: "asc" },
+        take: 8,
+        select: {
+          id: true,
+          name: true,
+          _count: {
+            select: { articles: true },
+          },
+        },
+      }),
+    ]);
 
-  return {
-    publishedCount,
-    draftCount,
-    reviewCount,
-    scheduledCount,
-    subscriberCount,
-    mostViewed,
-    categoryCounts,
-    activeAuthors,
-  };
+    return {
+      publishedCount,
+      draftCount,
+      reviewCount,
+      scheduledCount,
+      subscriberCount,
+      mostViewed,
+      categoryCounts,
+      activeAuthors,
+    };
+  } catch {
+    return {
+      publishedCount: 0,
+      draftCount: 0,
+      reviewCount: 0,
+      scheduledCount: 0,
+      subscriberCount: 0,
+      mostViewed: [],
+      categoryCounts: [],
+      activeAuthors: [],
+    };
+  }
 }
 
 export default async function AdminStatsPage() {

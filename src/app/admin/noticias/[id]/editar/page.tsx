@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { notFound, redirect } from "next/navigation";
+import { redirect } from "next/navigation";
 
 import { AdminShell } from "@/components/admin/admin-shell";
 import { ArticleCreateForm } from "@/components/admin/article-create-form";
@@ -25,26 +25,30 @@ type EditArticlePageProps = {
 };
 
 async function getEditData(articleId: string) {
-  const prisma = getPrismaClient();
-  const [article, categories] = await Promise.all([
-    prisma.article.findUnique({
-      where: { id: articleId },
-      include: {
-        author: true,
-        category: true,
-      },
-    }),
-    prisma.category.findMany({
-      where: { isActive: true },
-      orderBy: { name: "asc" },
-      select: {
-        id: true,
-        name: true,
-      },
-    }),
-  ]);
+  try {
+    const prisma = getPrismaClient();
+    const [article, categories] = await Promise.all([
+      prisma.article.findUnique({
+        where: { id: articleId },
+        include: {
+          author: true,
+          category: true,
+        },
+      }),
+      prisma.category.findMany({
+        where: { isActive: true },
+        orderBy: { name: "asc" },
+        select: {
+          id: true,
+          name: true,
+        },
+      }),
+    ]);
 
-  return { article, categories };
+    return { article, categories };
+  } catch {
+    return { article: null, categories: [] };
+  }
 }
 
 export default async function EditArticlePage({ params }: EditArticlePageProps) {
@@ -59,7 +63,14 @@ export default async function EditArticlePage({ params }: EditArticlePageProps) 
   const { article, categories } = await getEditData(id);
 
   if (!article) {
-    notFound();
+    return (
+      <AdminShell user={user}>
+        <div className="rounded border border-amber-200 bg-amber-50 p-6 text-sm text-amber-900">
+          No se pudo cargar esta noticia. Revisa la conexion a la base o que la
+          noticia exista.
+        </div>
+      </AdminShell>
+    );
   }
 
   const canEdit =

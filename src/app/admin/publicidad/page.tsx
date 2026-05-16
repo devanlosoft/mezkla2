@@ -13,12 +13,16 @@ export const metadata: Metadata = {
 };
 
 async function getAdvertisements() {
-  const prisma = getPrismaClient();
+  try {
+    const prisma = getPrismaClient();
 
-  return prisma.advertisement.findMany({
-    orderBy: { createdAt: "desc" },
-    take: 100,
-  });
+    return await prisma.advertisement.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 100,
+    });
+  } catch {
+    return [];
+  }
 }
 
 export default async function AdminAdsPage() {

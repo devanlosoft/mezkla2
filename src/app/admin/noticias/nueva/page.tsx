@@ -12,16 +12,20 @@ export const metadata: Metadata = {
 };
 
 async function getCategories() {
-  const prisma = getPrismaClient();
+  try {
+    const prisma = getPrismaClient();
 
-  return prisma.category.findMany({
-    where: { isActive: true },
-    orderBy: { name: "asc" },
-    select: {
-      id: true,
-      name: true,
-    },
-  });
+    return await prisma.category.findMany({
+      where: { isActive: true },
+      orderBy: { name: "asc" },
+      select: {
+        id: true,
+        name: true,
+      },
+    });
+  } catch {
+    return [];
+  }
 }
 
 export default async function NewArticlePage() {

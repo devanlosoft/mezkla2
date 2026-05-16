@@ -12,13 +12,30 @@ export const metadata: Metadata = {
 };
 
 async function getSettings() {
-  const prisma = getPrismaClient();
-  const settings = await prisma.siteSettings.findUnique({
-    where: { id: "default" },
-  });
+  try {
+    const prisma = getPrismaClient();
+    const settings = await prisma.siteSettings.findUnique({
+      where: { id: "default" },
+    });
 
-  return (
-    settings ?? {
+    return (
+      settings ?? {
+        siteName: "Mezkla2",
+        siteUrl: null,
+        description: null,
+        logoUrl: null,
+        defaultOgImage: null,
+        contactEmail: null,
+        facebookUrl: null,
+        xUrl: null,
+        instagramUrl: null,
+        youtubeUrl: null,
+        adsEnabled: true,
+        commentsEnabled: false,
+      }
+    );
+  } catch {
+    return {
       siteName: "Mezkla2",
       siteUrl: null,
       description: null,
@@ -31,8 +48,8 @@ async function getSettings() {
       youtubeUrl: null,
       adsEnabled: true,
       commentsEnabled: false,
-    }
-  );
+    };
+  }
 }
 
 export default async function AdminSettingsPage() {

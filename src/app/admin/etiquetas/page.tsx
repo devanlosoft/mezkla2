@@ -13,16 +13,20 @@ export const metadata: Metadata = {
 };
 
 async function getTags() {
-  const prisma = getPrismaClient();
+  try {
+    const prisma = getPrismaClient();
 
-  return prisma.tag.findMany({
-    orderBy: { name: "asc" },
-    include: {
-      _count: {
-        select: { articles: true },
+    return await prisma.tag.findMany({
+      orderBy: { name: "asc" },
+      include: {
+        _count: {
+          select: { articles: true },
+        },
       },
-    },
-  });
+    });
+  } catch {
+    return [];
+  }
 }
 
 export default async function AdminTagsPage() {

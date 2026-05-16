@@ -15,18 +15,22 @@ export const metadata: Metadata = {
 };
 
 async function getUsers() {
-  const prisma = getPrismaClient();
+  try {
+    const prisma = getPrismaClient();
 
-  return prisma.user.findMany({
-    orderBy: { createdAt: "desc" },
-    include: {
-      role: true,
-      authorProfile: true,
-      _count: {
-        select: { articles: true },
+    return await prisma.user.findMany({
+      orderBy: { createdAt: "desc" },
+      include: {
+        role: true,
+        authorProfile: true,
+        _count: {
+          select: { articles: true },
+        },
       },
-    },
-  });
+    });
+  } catch {
+    return [];
+  }
 }
 
 export default async function AdminUsersPage() {

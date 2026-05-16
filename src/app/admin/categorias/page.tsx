@@ -13,16 +13,20 @@ export const metadata: Metadata = {
 };
 
 async function getCategories() {
-  const prisma = getPrismaClient();
+  try {
+    const prisma = getPrismaClient();
 
-  return prisma.category.findMany({
-    orderBy: [{ isActive: "desc" }, { name: "asc" }],
-    include: {
-      _count: {
-        select: { articles: true },
+    return await prisma.category.findMany({
+      orderBy: [{ isActive: "desc" }, { name: "asc" }],
+      include: {
+        _count: {
+          select: { articles: true },
+        },
       },
-    },
-  });
+    });
+  } catch {
+    return [];
+  }
 }
 
 export default async function AdminCategoriesPage() {
