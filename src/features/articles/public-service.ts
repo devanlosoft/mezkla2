@@ -73,7 +73,9 @@ export async function getPublicArticleBySlug(slug: string) {
   });
 
   if (!article) {
-    return null;
+    const sample = allSampleArticles.find((item) => item.slug === slug);
+
+    return sample ? sampleToPublicArticle(sample) : null;
   }
 
   return {
@@ -127,6 +129,12 @@ export async function getPublicArticlesByCategory(categorySlug: string) {
       coverImage: true,
     },
   });
+
+  if (articles.length === 0) {
+    return allSampleArticles
+      .filter((article) => slugify(article.category) === categorySlug)
+      .map(sampleToPublicArticle);
+  }
 
   return articles.map(
     (article) =>
@@ -195,6 +203,17 @@ export async function searchPublicArticles(query: string) {
       coverImage: true,
     },
   });
+
+  if (articles.length === 0) {
+    return allSampleArticles
+      .filter((article) =>
+        [article.title, article.subtitle, article.category, article.author]
+          .join(" ")
+          .toLowerCase()
+          .includes(normalizedQuery),
+      )
+      .map(sampleToPublicArticle);
+  }
 
   return articles.map(
     (article) =>
