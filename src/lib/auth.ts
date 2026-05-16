@@ -30,10 +30,16 @@ export const authOptions: NextAuthOptions = {
         }
 
         const prisma = getPrismaClient();
-        const user = await prisma.user.findUnique({
-          where: { email },
-          include: { role: true },
-        });
+        let user;
+
+        try {
+          user = await prisma.user.findUnique({
+            where: { email },
+            include: { role: true },
+          });
+        } catch {
+          throw new Error("DATABASE_UNAVAILABLE");
+        }
 
         if (!user?.passwordHash || user.status !== "ACTIVE") {
           return null;

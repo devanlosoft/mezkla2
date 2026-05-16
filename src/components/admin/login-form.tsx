@@ -9,6 +9,7 @@ export function LoginForm() {
   const searchParams = useSearchParams();
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const callbackUrl = searchParams.get("callbackUrl") ?? "/admin";
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -23,12 +24,19 @@ export function LoginForm() {
       email,
       password,
       redirect: false,
-      callbackUrl: searchParams.get("callbackUrl") ?? "/admin",
+      callbackUrl,
     });
 
     setIsSubmitting(false);
 
     if (!response?.ok) {
+      if (response?.error === "DATABASE_UNAVAILABLE") {
+        setError(
+          "No se pudo conectar con la base de datos. Revisa DATABASE_URL y ejecuta migraciones/seed.",
+        );
+        return;
+      }
+
       setError("Credenciales invalidas o usuario sin acceso activo.");
       return;
     }
@@ -80,6 +88,11 @@ export function LoginForm() {
       >
         {isSubmitting ? "Ingresando..." : "Ingresar"}
       </button>
+
+      <p className="text-xs leading-5 text-zinc-500">
+        Si es la primera vez que despliegas, asegúrate de haber corrido
+        migraciones y seed sobre la misma base que usa la app.
+      </p>
     </form>
   );
 }
