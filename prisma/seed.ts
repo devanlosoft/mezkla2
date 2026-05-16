@@ -15,7 +15,7 @@ const adapter = new PrismaPg({
 });
 
 const prisma = new PrismaClient({ adapter });
-
+//no se que hace
 const roles: Array<{ name: RoleName; description: string }> = [
   { name: "ADMIN", description: "Acceso total al sistema." },
   { name: "EDITOR", description: "Aprueba, publica y organiza contenidos." },
