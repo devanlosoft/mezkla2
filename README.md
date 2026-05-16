@@ -1,36 +1,64 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Mezkla2
 
-## Getting Started
+Mezkla2 is a modern digital newspaper and newsroom platform built with Next.js, TypeScript, Tailwind CSS, Prisma, PostgreSQL, and role-based administration.
 
-First, run the development server:
+## Current Phase
+
+Phase 1 is focused on project foundation:
+
+- Next.js application scaffold.
+- TypeScript strict mode.
+- Tailwind CSS.
+- Architecture documentation.
+- Planned folder structure.
+- Verification scripts.
+
+## Development
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open `http://localhost:3000`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Verification
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run typecheck
+npm run lint
+npm run build
+```
 
-## Learn More
+## Database
 
-To learn more about Next.js, take a look at the following resources:
+Prisma 7 uses `prisma.config.ts` for datasource configuration. Set a real PostgreSQL `DATABASE_URL` in `.env` before running migrations or seed commands.
+To create the first administrator during seed, define `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD`, and optionally `SEED_ADMIN_NAME`.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm run prisma:validate
+npm run prisma:generate
+npx prisma migrate dev
+npm run prisma:seed
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Documentation
 
-## Deploy on Vercel
+- [Architecture](docs/architecture.md)
+- [Environment](docs/env.md)
+- [Deployment](docs/deployment.md)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Planned Stack
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Next.js App Router
+- TypeScript
+- Tailwind CSS
+- shadcn/ui
+- Prisma
+- PostgreSQL
+- NextAuth.js
+- Zod
+- TipTap
+- Vitest
+- Playwright
+- Vercel
