@@ -6,12 +6,12 @@ import {
 import { PrismaPg } from "@prisma/adapter-pg";
 import { hash } from "bcryptjs";
 
-if (!process.env.DATABASE_URL) {
-  throw new Error("DATABASE_URL is required to seed the database.");
+if (!process.env.PRISMA_DATABASE_URL) {
+  throw new Error("PRISMA_DATABASE_URL is required to seed the database.");
 }
 
 const adapter = new PrismaPg({
-  connectionString: process.env.DATABASE_URL,
+  connectionString: process.env.PRISMA_DATABASE_URL,
 });
 
 const prisma = new PrismaClient({ adapter });
