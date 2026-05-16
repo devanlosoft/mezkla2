@@ -59,51 +59,57 @@ export async function getPublicArticleBySlug(slug: string) {
     return sample ? sampleToPublicArticle(sample) : null;
   }
 
-  const prisma = getPrismaClient();
-  const article = await prisma.article.findFirst({
-    where: {
-      slug,
-      status: "PUBLISHED",
-    },
-    include: {
-      author: true,
-      category: true,
-      coverImage: true,
-    },
-  });
+  try {
+    const prisma = getPrismaClient();
+    const article = await prisma.article.findFirst({
+      where: {
+        slug,
+        status: "PUBLISHED",
+      },
+      include: {
+        author: true,
+        category: true,
+        coverImage: true,
+      },
+    });
 
-  if (!article) {
+    if (!article) {
+      const sample = allSampleArticles.find((item) => item.slug === slug);
+
+      return sample ? sampleToPublicArticle(sample) : null;
+    }
+
+    return {
+      id: article.id,
+      title: article.title,
+      subtitle: article.subtitle,
+      slug: article.slug,
+      summary: article.summary,
+      contentHtml: article.contentHtml,
+      imageUrl:
+        article.coverImage?.url ??
+        article.ogImage ??
+        "https://images.unsplash.com/photo-1495020689067-958852a7765e?auto=format&fit=crop&w=1400&q=80",
+      category: {
+        name: article.category.name,
+        slug: article.category.slug,
+      },
+      author: {
+        name: article.author.name,
+      },
+      publishedAt: article.publishedAt,
+      readingMinutes: article.readingMinutes,
+      viewsCount: article.viewsCount,
+      seoTitle: article.seoTitle,
+      seoDescription: article.seoDescription,
+      keywords: article.keywords,
+      ogImage: article.ogImage,
+    } satisfies PublicArticle;
+  } catch {
     const sample = allSampleArticles.find((item) => item.slug === slug);
 
     return sample ? sampleToPublicArticle(sample) : null;
   }
-
-  return {
-    id: article.id,
-    title: article.title,
-    subtitle: article.subtitle,
-    slug: article.slug,
-    summary: article.summary,
-    contentHtml: article.contentHtml,
-    imageUrl:
-      article.coverImage?.url ??
-      article.ogImage ??
-      "https://images.unsplash.com/photo-1495020689067-958852a7765e?auto=format&fit=crop&w=1400&q=80",
-    category: {
-      name: article.category.name,
-      slug: article.category.slug,
-    },
-    author: {
-      name: article.author.name,
-    },
-    publishedAt: article.publishedAt,
-    readingMinutes: article.readingMinutes,
-    viewsCount: article.viewsCount,
-    seoTitle: article.seoTitle,
-    seoDescription: article.seoDescription,
-    keywords: article.keywords,
-    ogImage: article.ogImage,
-  } satisfies PublicArticle;
 }
 
 export async function getPublicArticlesByCategory(categorySlug: string) {
@@ -113,58 +119,64 @@ export async function getPublicArticlesByCategory(categorySlug: string) {
       .map(sampleToPublicArticle);
   }
 
-  const prisma = getPrismaClient();
-  const articles = await prisma.article.findMany({
-    where: {
-      status: "PUBLISHED",
-      category: {
-        slug: categorySlug,
+  try {
+    const prisma = getPrismaClient();
+    const articles = await prisma.article.findMany({
+      where: {
+        status: "PUBLISHED",
+        category: {
+          slug: categorySlug,
+        },
       },
-    },
-    orderBy: { publishedAt: "desc" },
-    take: 24,
-    include: {
-      author: true,
-      category: true,
-      coverImage: true,
-    },
-  });
+      orderBy: { publishedAt: "desc" },
+      take: 24,
+      include: {
+        author: true,
+        category: true,
+        coverImage: true,
+      },
+    });
 
-  if (articles.length === 0) {
+    if (articles.length === 0) {
+      return allSampleArticles
+        .filter((article) => slugify(article.category) === categorySlug)
+        .map(sampleToPublicArticle);
+    }
+
+    return articles.map(
+      (article) =>
+        ({
+          id: article.id,
+          title: article.title,
+          subtitle: article.subtitle,
+          slug: article.slug,
+          summary: article.summary,
+          contentHtml: article.contentHtml,
+          imageUrl:
+            article.coverImage?.url ??
+            article.ogImage ??
+            "https://images.unsplash.com/photo-1495020689067-958852a7765e?auto=format&fit=crop&w=1400&q=80",
+          category: {
+            name: article.category.name,
+            slug: article.category.slug,
+          },
+          author: {
+            name: article.author.name,
+          },
+          publishedAt: article.publishedAt,
+          readingMinutes: article.readingMinutes,
+          viewsCount: article.viewsCount,
+          seoTitle: article.seoTitle,
+          seoDescription: article.seoDescription,
+          keywords: article.keywords,
+          ogImage: article.ogImage,
+        }) satisfies PublicArticle,
+    );
+  } catch {
     return allSampleArticles
       .filter((article) => slugify(article.category) === categorySlug)
       .map(sampleToPublicArticle);
   }
-
-  return articles.map(
-    (article) =>
-      ({
-        id: article.id,
-        title: article.title,
-        subtitle: article.subtitle,
-        slug: article.slug,
-        summary: article.summary,
-        contentHtml: article.contentHtml,
-        imageUrl:
-          article.coverImage?.url ??
-          article.ogImage ??
-          "https://images.unsplash.com/photo-1495020689067-958852a7765e?auto=format&fit=crop&w=1400&q=80",
-        category: {
-          name: article.category.name,
-          slug: article.category.slug,
-        },
-        author: {
-          name: article.author.name,
-        },
-        publishedAt: article.publishedAt,
-        readingMinutes: article.readingMinutes,
-        viewsCount: article.viewsCount,
-        seoTitle: article.seoTitle,
-        seoDescription: article.seoDescription,
-        keywords: article.keywords,
-        ogImage: article.ogImage,
-      }) satisfies PublicArticle,
-  );
 }
 
 export async function searchPublicArticles(query: string) {
@@ -185,26 +197,67 @@ export async function searchPublicArticles(query: string) {
       .map(sampleToPublicArticle);
   }
 
-  const prisma = getPrismaClient();
-  const articles = await prisma.article.findMany({
-    where: {
-      status: "PUBLISHED",
-      OR: [
-        { title: { contains: normalizedQuery, mode: "insensitive" } },
-        { subtitle: { contains: normalizedQuery, mode: "insensitive" } },
-        { summary: { contains: normalizedQuery, mode: "insensitive" } },
-      ],
-    },
-    orderBy: { publishedAt: "desc" },
-    take: 30,
-    include: {
-      author: true,
-      category: true,
-      coverImage: true,
-    },
-  });
+  try {
+    const prisma = getPrismaClient();
+    const articles = await prisma.article.findMany({
+      where: {
+        status: "PUBLISHED",
+        OR: [
+          { title: { contains: normalizedQuery, mode: "insensitive" } },
+          { subtitle: { contains: normalizedQuery, mode: "insensitive" } },
+          { summary: { contains: normalizedQuery, mode: "insensitive" } },
+        ],
+      },
+      orderBy: { publishedAt: "desc" },
+      take: 30,
+      include: {
+        author: true,
+        category: true,
+        coverImage: true,
+      },
+    });
 
-  if (articles.length === 0) {
+    if (articles.length === 0) {
+      return allSampleArticles
+        .filter((article) =>
+          [article.title, article.subtitle, article.category, article.author]
+            .join(" ")
+            .toLowerCase()
+            .includes(normalizedQuery),
+        )
+        .map(sampleToPublicArticle);
+    }
+
+    return articles.map(
+      (article) =>
+        ({
+          id: article.id,
+          title: article.title,
+          subtitle: article.subtitle,
+          slug: article.slug,
+          summary: article.summary,
+          contentHtml: article.contentHtml,
+          imageUrl:
+            article.coverImage?.url ??
+            article.ogImage ??
+            "https://images.unsplash.com/photo-1495020689067-958852a7765e?auto=format&fit=crop&w=1400&q=80",
+          category: {
+            name: article.category.name,
+            slug: article.category.slug,
+          },
+          author: {
+            name: article.author.name,
+          },
+          publishedAt: article.publishedAt,
+          readingMinutes: article.readingMinutes,
+          viewsCount: article.viewsCount,
+          seoTitle: article.seoTitle,
+          seoDescription: article.seoDescription,
+          keywords: article.keywords,
+          ogImage: article.ogImage,
+        }) satisfies PublicArticle,
+    );
+  } catch {
     return allSampleArticles
       .filter((article) =>
         [article.title, article.subtitle, article.category, article.author]
@@ -214,36 +267,6 @@ export async function searchPublicArticles(query: string) {
       )
       .map(sampleToPublicArticle);
   }
-
-  return articles.map(
-    (article) =>
-      ({
-        id: article.id,
-        title: article.title,
-        subtitle: article.subtitle,
-        slug: article.slug,
-        summary: article.summary,
-        contentHtml: article.contentHtml,
-        imageUrl:
-          article.coverImage?.url ??
-          article.ogImage ??
-          "https://images.unsplash.com/photo-1495020689067-958852a7765e?auto=format&fit=crop&w=1400&q=80",
-        category: {
-          name: article.category.name,
-          slug: article.category.slug,
-        },
-        author: {
-          name: article.author.name,
-        },
-        publishedAt: article.publishedAt,
-        readingMinutes: article.readingMinutes,
-        viewsCount: article.viewsCount,
-        seoTitle: article.seoTitle,
-        seoDescription: article.seoDescription,
-        keywords: article.keywords,
-        ogImage: article.ogImage,
-      }) satisfies PublicArticle,
-  );
 }
 
 export function getSampleCategories() {
